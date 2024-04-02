@@ -67,9 +67,11 @@ def handle_dialog(req, res):
             'suggests': [
                 "Не хочу.",
                 "Не буду.",
-                "Отстань!",
-            ]
+                "Отстань!"
+            ],
+            'animal': 'слон'
         }
+
         # Заполняем текст ответа
         res['response']['text'] = 'Привет! Купи слона!'
         # Получим подсказки
@@ -90,14 +92,25 @@ def handle_dialog(req, res):
         'покупаю',
         'хорошо'
     ]:
-        # Пользователь согласился, прощаемся.
-        res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
-        res['response']['end_session'] = True
+        # Пользователь согласился, переходим на кролика.
+        if sessionStorage[user_id]['animal'] == 'кролик':
+            res['response']['text'] = 'Кролика можно найти на Яндекс.Маркете!'
+            res['response']['end_session'] = True
+        else:
+            sessionStorage[user_id]['animal'] = 'кролик'
+            sessionStorage[user_id]['suggests'] = [
+                    "Не хочу.",
+                    "Не буду.",
+                    "Отстань!"
+                ]
+            res['response']['buttons'] = get_suggests(user_id)
+            res['response']['text'] = 'Слона можно найти на Яндекс.Маркете! А теперь купи кролика'
         return
 
-    # Если нет, то убеждаем его купить слона!
+    # Если нет, то убеждаем его купить слона/кролика!
+    animal = sessionStorage[user_id]['animal']
     res['response']['text'] = \
-        f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
+        f"Все говорят '{req['request']['original_utterance']}', а ты купи {animal}а!"
     res['response']['buttons'] = get_suggests(user_id)
 
 
@@ -120,7 +133,7 @@ def get_suggests(user_id):
     if len(suggests) < 2:
         suggests.append({
             "title": "Ладно",
-            "url": "https://market.yandex.ru/search?text=слон",
+            "url": f"https://market.yandex.ru/search?text={session['animal']}",
             "hide": True
         })
 
